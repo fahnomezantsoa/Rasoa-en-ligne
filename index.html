@@ -1,334 +1,277 @@
-import React, { useState } from "react";
-import { 
-  ShoppingCart, 
-  Users, 
-  Truck, 
-  Lock, 
-  Package, 
-  Plus, 
-  Phone, 
-  MapPin, 
-  CreditCard,
-  CheckCircle2,
-  Clock,
-  ChevronRight,
-  LogOut
-} from "lucide-react";
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rasoa en Ligne Pro</title>
+    <!-- Moteurs React et Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .custom-shadow { shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
 
-/**
- * COMPOSANT : Rasoa en Ligne
- * Interface de gestion de boutique de chaussures à Madagascar.
- */
-export default function App() {
-  // --- États ---
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [password, setPassword] = useState("");
-  const [clients, setClients] = useState([]);
-  const [livraisons, setLivraisons] = useState([]);
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-  // --- États Formulaire ---
-  const [clientName, setClientName] = useState("");
-  const [telephone, setTelephone] = useState("");
-  const [montant, setMontant] = useState("");
-  const [zone, setZone] = useState("Centre-ville");
+        // Composant Icône (SVG Lucide)
+        const Icon = ({ name, size = 20, className = "" }) => {
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            }, [name]);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
 
-  const zones = {
-    "Centre-ville": 2000,
-    "Périphérie": 4000,
-    "Hors ville": 6000,
-  };
-
-  const handleLogin = () => {
-    if (password === "rasoa123") {
-      setIsAdmin(true);
-    } else {
-      alert("Mot de passe incorrect");
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAdmin(false);
-    setPassword("");
-  };
-
-  const addOrder = () => {
-    if (!clientName || !montant || !telephone) return;
-
-    const frais = zones[zone];
-    const total = Number(montant) + Number(frais);
-
-    const newOrder = {
-      id: Date.now(),
-      client: clientName,
-      telephone,
-      montant: Number(montant),
-      frais,
-      total,
-      zone,
-      statut: "Préparation",
-      date: new Date().toLocaleDateString('fr-FR')
-    };
-
-    setClients(prev => [...prev, { nom: clientName, telephone, zone }]);
-    setLivraisons(prev => [newOrder, ...prev]);
-
-    // Reset formulaire
-    setClientName("");
-    setTelephone("");
-    setMontant("");
-    setZone("Centre-ville");
-  };
-
-  const updateStatus = (id) => {
-    setLivraisons(prev => prev.map(liv => {
-      if (liv.id === id) {
-        if (liv.statut === "Préparation") return { ...liv, statut: "Livraison" };
-        if (liv.statut === "Livraison") return { ...liv, statut: "Livré" };
-      }
-      return liv;
-    }));
-  };
-
-  const getStatusStyle = (statut) => {
-    switch (statut) {
-      case "Préparation": return "bg-orange-100 text-orange-700 border-orange-200";
-      case "Livraison": return "bg-blue-100 text-blue-700 border-blue-200";
-      case "Livré": return "bg-green-100 text-green-700 border-green-200";
-      default: return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-12">
-      {/* Navbar */}
-      <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 p-2 rounded-lg text-white">
-              <Package size={20} />
-            </div>
-            <span className="text-xl font-bold tracking-tight uppercase">Rasoa en ligne</span>
-          </div>
-          {isAdmin && (
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-600 transition-colors"
-            >
-              <LogOut size={16} /> Quitter
-            </button>
-          )}
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 pt-8">
-        {/* En-tête de bienvenue */}
-        <header className="mb-10 text-center">
-          <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Tableau de Bord</h1>
-          <p className="text-slate-500 max-w-lg mx-auto">
-            Gérez vos commandes de chaussures, slides et crocs en toute simplicité.
-          </p>
-        </header>
-
-        {!isAdmin ? (
-          /* Écran de Connexion */
-          <div className="flex justify-center items-center py-12">
-            <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 w-full max-w-md">
-              <div className="flex justify-center mb-6">
-                <div className="p-4 bg-indigo-50 rounded-full text-indigo-600">
-                  <Lock size={32} />
-                </div>
-              </div>
-              <h2 className="text-2xl font-bold text-center mb-6">Espace Administrateur</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2 ml-1 text-slate-700">Mot de passe</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                    placeholder="Entrez rasoa123"
-                  />
-                </div>
-                <button 
-                  onClick={handleLogin}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95"
-                >
-                  Accéder à la gestion
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* Dashboard Admin */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        function App() {
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [password, setPassword] = useState("");
+            const [activeTab, setActiveTab] = useState("commandes");
             
-            {/* Colonne de Gauche : Formulaire */}
-            <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                  <h2 className="font-bold flex items-center gap-2 text-slate-800">
-                    <Plus size={18} className="text-indigo-600" /> Nouvelle Commande
-                  </h2>
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase text-slate-400 ml-1">Client</label>
-                    <input
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      placeholder="Nom complet"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase text-slate-400 ml-1">Téléphone</label>
-                    <input
-                      value={telephone}
-                      onChange={(e) => setTelephone(e.target.value)}
-                      placeholder="034 00 000 00"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase text-slate-400 ml-1">Montant Produit (Ar)</label>
-                    <input
-                      type="number"
-                      value={montant}
-                      onChange={(e) => setMontant(e.target.value)}
-                      placeholder="Ex: 45000"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-semibold text-indigo-700"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase text-slate-400 ml-1">Zone de Livraison</label>
-                    <select
-                      value={zone}
-                      onChange={(e) => setZone(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm appearance-none cursor-pointer"
-                    >
-                      {Object.keys(zones).map((z) => (
-                        <option key={z} value={z}>{z} (+{zones[z]} Ar)</option>
-                      ))}
-                    </select>
-                  </div>
-                  <button 
-                    onClick={addOrder}
-                    disabled={!clientName || !montant || !telephone}
-                    className="w-full bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-bold transition-all mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    Enregistrer la commande
-                  </button>
-                </div>
-              </div>
+            // États des données
+            const [clients, setClients] = useState([
+                { nom: "Client Exemple", telephone: "0340000000", zone: "Centre-ville", lieu: "Lot IVG 42" }
+            ]);
+            const [livraisons, setLivraisons] = useState([]);
 
-              {/* Petit récapitulatif */}
-              <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-lg shadow-indigo-100">
-                <p className="text-indigo-100 text-sm mb-1">Total Livraisons</p>
-                <p className="text-4xl font-black">{livraisons.length}</p>
-                <div className="flex gap-4 mt-4 text-xs font-medium text-indigo-100">
-                  <span className="flex items-center gap-1 bg-indigo-500/30 px-2 py-1 rounded-md">
-                    <Clock size={12}/> {livraisons.filter(l => l.statut !== "Livré").length} en cours
-                  </span>
-                  <span className="flex items-center gap-1 bg-indigo-500/30 px-2 py-1 rounded-md">
-                    <CheckCircle2 size={12}/> {livraisons.filter(l => l.statut === "Livré").length} livrés
-                  </span>
-                </div>
-              </div>
-            </div>
+            // États des formulaires
+            const [orderForm, setOrderForm] = useState({
+                nom: "", telephone: "", montant: "", zone: "Centre-ville", lieu: "", type: "Produit"
+            });
+            const [clientForm, setClientForm] = useState({ nom: "", telephone: "", lieu: "" });
 
-            {/* Colonne de Droite : Liste des Livraisons */}
-            <div className="lg:col-span-2 space-y-4">
-              <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800 ml-2 mb-4">
-                <Truck size={22} className="text-indigo-600" /> Commandes en temps réel
-              </h2>
+            const zones = { "Centre-ville": 3000, "Périphérie": 4000, "Hors ville": 6000 };
 
-              {livraisons.length === 0 ? (
-                <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center text-slate-400">
-                  <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ShoppingCart size={24} />
-                  </div>
-                  <p>Aucune commande enregistrée pour le moment.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {livraisons.map((liv) => (
-                    <div 
-                      key={liv.id} 
-                      className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
-                    >
-                      {/* Statut Badge */}
-                      <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl border-l border-b text-[10px] font-black uppercase tracking-wider ${getStatusStyle(liv.statut)}`}>
-                        {liv.statut}
-                      </div>
+            const handleLogin = () => {
+                if (password === "rasoa123") setIsAdmin(true);
+                else alert("Mot de passe incorrect");
+            };
 
-                      <div className="mb-4">
-                        <h3 className="font-black text-lg text-slate-900 leading-tight">{liv.client}</h3>
-                        <div className="flex items-center gap-2 text-slate-400 text-xs mt-1">
-                          <Clock size={12} /> {liv.date}
+            const addOrder = () => {
+                const { nom, telephone, montant, zone, lieu, type } = orderForm;
+                if (!nom || !montant || !telephone || !lieu) return alert("Veuillez remplir tous les champs !");
+                
+                const frais = zones[zone];
+                const newOrder = {
+                    id: Date.now(),
+                    client: nom,
+                    telephone,
+                    montant: Number(montant),
+                    frais,
+                    total: Number(montant) + frais,
+                    zone,
+                    lieu,
+                    type,
+                    statut: "Préparation",
+                    date: new Date().toLocaleDateString('fr-FR')
+                };
+
+                // Auto-ajout au répertoire client
+                if (!clients.find(c => c.telephone === telephone)) {
+                    setClients(prev => [...prev, { nom, telephone, zone, lieu }]);
+                }
+
+                setLivraisons(prev => [newOrder, ...prev]);
+                setOrderForm({ nom: "", telephone: "", montant: "", zone: "Centre-ville", lieu: "", type: "Produit" });
+                setActiveTab("livraisons");
+            };
+
+            const addClient = () => {
+                if (!clientForm.nom || !clientForm.telephone || !clientForm.lieu) return alert("Infos incomplètes");
+                setClients(prev => [...prev, { ...clientForm, zone: "Centre-ville" }]);
+                setClientForm({ nom: "", telephone: "", lieu: "" });
+                alert("Client ajouté !");
+            };
+
+            const nextStatus = (id) => {
+                setLivraisons(prev => prev.map(l => {
+                    if (l.id === id) {
+                        if (l.statut === "Préparation") return { ...l, statut: "Livraison" };
+                        if (l.statut === "Livraison") return { ...l, statut: "Livré" };
+                    }
+                    return l;
+                }));
+            };
+
+            if (!isAdmin) {
+                return (
+                    <div className="flex items-center justify-center min-h-screen p-4">
+                        <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center border border-slate-100">
+                            <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Icon name="lock" size={32} />
+                            </div>
+                            <h1 className="text-2xl font-black mb-2 uppercase tracking-tighter">Rasoa Pro</h1>
+                            <p className="text-slate-400 text-sm mb-8">Espace de gestion réservé</p>
+                            <input 
+                                type="password" 
+                                placeholder="Mot de passe" 
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl mb-4 text-center outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                            />
+                            <button onClick={handleLogin} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">
+                                Connexion
+                            </button>
                         </div>
-                      </div>
-
-                      <div className="space-y-2 mb-5">
-                        <div className="flex items-center gap-3 text-sm text-slate-600">
-                          <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                            <Phone size={14} />
-                          </div>
-                          <span>{liv.telephone}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-slate-600">
-                          <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                            <MapPin size={14} />
-                          </div>
-                          <span>{liv.zone}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm font-bold text-slate-800">
-                          <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500">
-                            <CreditCard size={14} />
-                          </div>
-                          <div className="flex flex-col">
-                             <span className="text-xs text-slate-400 font-normal">Total à encaisser</span>
-                             <span>{liv.total.toLocaleString()} Ar</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {liv.statut !== "Livré" && (
-                        <button 
-                          onClick={() => updateStatus(liv.id)}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 hover:bg-indigo-600 hover:text-white text-indigo-600 text-xs font-bold transition-all border border-indigo-50"
-                        >
-                          Étape Suivante <ChevronRight size={14} />
-                        </button>
-                      )}
-                      
-                      {liv.statut === "Livré" && (
-                        <div className="w-full py-2.5 text-center text-green-600 text-xs font-bold bg-green-50 rounded-xl">
-                          Commande terminée
-                        </div>
-                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </main>
+                );
+            }
 
-      {/* Footer minimaliste */}
-      <footer className="mt-20 py-8 border-t border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center gap-4">
-          <div className="flex items-center gap-2 opacity-50">
-             <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse"></div>
-             <div className="w-1 h-1 rounded-full bg-white border border-red-500"></div>
-             <div className="w-1 h-1 rounded-full bg-green-500"></div>
-          </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-            © RASOA EN LIGNE • MADAGASCAR 2024
-          </p>
-        </div>
-      </footer>
-    </div>
-  );
-}
+            return (
+                <div className="min-h-screen flex flex-col">
+                    {/* Navigation */}
+                    <nav className="bg-white border-b px-6 h-16 flex items-center justify-between sticky top-0 z-50">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-indigo-600 p-2 rounded-lg text-white"><Icon name="shopping-cart" /></div>
+                            <span className="font-black text-xl tracking-tighter uppercase">Rasoa Pro</span>
+                        </div>
+                        <button onClick={() => setIsAdmin(false)} className="text-slate-400 hover:text-red-500 font-bold text-sm flex items-center gap-1">
+                            <Icon name="log-out" size={16} /> Quitter
+                        </button>
+                    </nav>
+
+                    {/* Onglets Menu */}
+                    <div className="bg-white border-b overflow-x-auto">
+                        <div className="max-w-5xl mx-auto px-4 flex">
+                            {[
+                                { id: 'commandes', label: 'Nouvelle Vente', icon: 'plus-circle' },
+                                { id: 'livraisons', label: 'Suivi Livraisons', icon: 'truck' },
+                                { id: 'clients', label: 'Répertoire Clients', icon: 'users' }
+                            ].map(t => (
+                                <button 
+                                    key={t.id}
+                                    onClick={() => setActiveTab(t.id)}
+                                    className={`px-6 py-4 flex items-center gap-2 border-b-2 font-bold text-sm whitespace-nowrap transition-all ${activeTab === t.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400'}`}
+                                >
+                                    <Icon name={t.icon} size={16} /> {t.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <main className="max-w-5xl mx-auto w-full p-6">
+                        {/* ONGLET COMMANDES */}
+                        {activeTab === 'commandes' && (
+                            <div className="max-w-2xl mx-auto bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                                <h2 className="text-xl font-black uppercase text-center flex items-center justify-center gap-2">
+                                    <Icon name="plus" className="text-indigo-600" /> Créer une commande
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <input value={orderForm.nom} onChange={e => setOrderForm({...orderForm, nom: e.target.value})} placeholder="Nom du client" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    <input value={orderForm.telephone} onChange={e => setOrderForm({...orderForm, telephone: e.target.value})} placeholder="Téléphone" className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-mono" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-indigo-500 uppercase ml-2 flex items-center gap-1"><Icon name="map-pin" size={10} /> Lieu de livraison exact</label>
+                                    <input value={orderForm.lieu} onChange={e => setOrderForm({...orderForm, lieu: e.target.value})} placeholder="Quartier, Lot, Immeuble..." className="w-full p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 outline-none" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input type="number" value={orderForm.montant} onChange={e => setOrderForm({...orderForm, montant: e.target.value})} placeholder="Montant Ar" className="p-4 bg-slate-50 rounded-2xl border-none font-bold" />
+                                    <select value={orderForm.type} onChange={e => setOrderForm({...orderForm, type: e.target.value})} className="p-4 bg-slate-50 rounded-2xl border-none">
+                                        <option value="Produit">Produit</option>
+                                        <option value="Colis">Colis</option>
+                                    </select>
+                                </div>
+                                <select value={orderForm.zone} onChange={e => setOrderForm({...orderForm, zone: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none">
+                                    {Object.keys(zones).map(z => <option key={z} value={z}>{z} (+{zones[z]} Ar)</option>)}
+                                </select>
+                                <div className="bg-slate-900 text-white p-5 rounded-2xl flex justify-between items-center font-bold">
+                                    <span className="text-xs uppercase opacity-50">Total Final</span>
+                                    <span className="text-xl">{(Number(orderForm.montant) + zones[orderForm.zone]).toLocaleString()} Ar</span>
+                                </div>
+                                <button onClick={addOrder} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-indigo-100">Valider la vente</button>
+                            </div>
+                        )}
+
+                        {/* ONGLET LIVRAISONS */}
+                        {activeTab === 'livraisons' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {livraisons.length === 0 ? (
+                                    <div className="col-span-full py-20 text-center text-slate-400 italic font-medium">Aucune livraison en attente</div>
+                                ) : (
+                                    livraisons.map(l => (
+                                        <div key={l.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                                            <div className={`py-2 text-[10px] font-black uppercase text-center border-b ${l.statut === 'Livré' ? 'bg-green-100 text-green-700' : l.statut === 'Livraison' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                {l.statut}
+                                            </div>
+                                            <div className="p-6 space-y-4 flex-1">
+                                                <div className="flex justify-between items-start">
+                                                    <h3 className="font-black text-slate-900 text-lg leading-tight">{l.client}</h3>
+                                                    <span className="text-[9px] px-2 py-1 bg-slate-100 rounded-md font-bold uppercase">{l.type}</span>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="text-xs font-bold text-indigo-600 flex items-center gap-1 uppercase tracking-tight"><Icon name="map-pin" size={10} /> {l.zone}</div>
+                                                    <p className="text-xs text-slate-500 font-medium leading-relaxed">{l.lieu}</p>
+                                                    <div className="text-xs font-mono text-slate-400 bg-slate-50 p-2 rounded-lg">{l.telephone}</div>
+                                                </div>
+                                                <div className="pt-4 border-t flex justify-between items-center mt-auto">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[8px] font-bold text-slate-400 uppercase">Total Ar</span>
+                                                        <span className="font-black text-slate-900 text-xl tracking-tighter">{l.total.toLocaleString()}</span>
+                                                    </div>
+                                                    {l.statut !== "Livré" && (
+                                                        <button onClick={() => nextStatus(l.id)} className="bg-slate-900 text-white p-3 rounded-2xl hover:bg-indigo-600 transition-all">
+                                                            <Icon name="chevron-right" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+
+                        {/* ONGLET CLIENTS */}
+                        {activeTab === 'clients' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm h-fit space-y-4">
+                                    <h2 className="font-black uppercase text-sm flex items-center gap-2">
+                                        <Icon name="user-plus" size={16} className="text-indigo-600" /> Nouveau Client
+                                    </h2>
+                                    <input value={clientForm.nom} onChange={e => setClientForm({...clientForm, nom: e.target.value})} placeholder="Nom complet" className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm" />
+                                    <input value={clientForm.telephone} onChange={e => setClientForm({...clientForm, telephone: e.target.value})} placeholder="Téléphone" className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-mono" />
+                                    <textarea value={clientForm.lieu} onChange={e => setClientForm({...clientForm, lieu: e.target.value})} placeholder="Lieu/Adresse par défaut" className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm h-24 resize-none" />
+                                    <button onClick={addClient} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-all">
+                                        Enregistrer
+                                    </button>
+                                </div>
+                                <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+                                    <table className="w-full text-left text-sm">
+                                        <thead className="bg-slate-50 border-b text-[10px] uppercase text-slate-400 font-bold tracking-widest">
+                                            <tr>
+                                                <th className="px-6 py-4">Nom Client</th>
+                                                <th className="px-6 py-4">Téléphone</th>
+                                                <th className="px-6 py-4">Lieu Habituel</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {clients.map((c, i) => (
+                                                <tr key={i} className="hover:bg-indigo-50/30 transition-colors">
+                                                    <td className="px-6 py-4 font-bold text-slate-800">{c.nom}</td>
+                                                    <td className="px-6 py-4 text-slate-500 font-mono">{c.telephone}</td>
+                                                    <td className="px-6 py-4 text-xs text-slate-400">{c.lieu}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
